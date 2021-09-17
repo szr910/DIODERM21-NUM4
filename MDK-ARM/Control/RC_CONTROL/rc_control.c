@@ -118,7 +118,7 @@ void M2006_Total_Angle(void)
 	//若转过了180°传感器会跳变到-180°，用两个判断消除跳变
 	if(M2006_cur>5000)  
 	{
-			M2006_cur-=8191;
+			M2006_cur-=891;
 	}
 	if(M2006_cur<-5000) 
 	{
@@ -126,7 +126,7 @@ void M2006_Total_Angle(void)
 	}
 	//进行角度累加，使角度连续
 	CAN_M2006[2].total_angle+=M2006_cur;
-	STORETOTALANGLE=CAN_M2006[2].total_angle/8191*10;
+	STORETOTALANGLE=CAN_M2006[2].total_angle/8191;
 }
 
 void M3508_Speed_Angle(void)
