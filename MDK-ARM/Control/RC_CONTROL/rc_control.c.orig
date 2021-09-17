@@ -1,0 +1,92 @@
+/**
+ ***************************************(C) COPYRIGHT 2019 DIODE***************************************
+ * @file       rc_control.c
+ * @brief
+ * @note
+ * @Version    V1.0.0
+ * @Date       2019.12.6
+ ***************************************(C) COPYRIGHT 2019 DIODE***************************************
+ */
+#include "rc_control.h"
+
+extern int 			setSpeed[4];
+
+// 遥控器控制底盘
+void RC_Chassis(void)
+{
+    IMU_Get();
+    pitch_angle_set= map(rc.ch1,-660,660,130,170);
+        spin_angle_set -= map(rc.ch0,-660,660,-2,2);
+        if(spin_angle_set > 360)
+            spin_angle_set = spin_angle_set-360;
+        if(spin_angle_set < 0)
+            spin_angle_set = spin_angle_set+360;
+
+    CAN_GM6020[0].set_voltage = PID_Calc2(&PID_GM6020[0],spin_angle_set,imu.yaw);
+    CAN_GM6020[1].set_voltage = -PID_Calc2(&PID_GM6020[1],pitch_angle_set,(float)CAN_GM6020[1].angle/8191*180);
+    CAN_GM6020_Gimbal_SendVoltage();
+    if(rc.ch2!=0||rc.ch3!=0) {
+        velocity(rc.ch2,rc.ch3);
+        for(int i=0; i<4; i++) 	//对M3508的操作
+        {
+            setSpeed[i] = map(setSpeed[i],-660,660,-4000,4000);
+            CAN_M3508[i].set_current =  PID_Calculate(&PID_M3508[i], setSpeed[i], CAN_M3508[i].speed);
+        }
+//	M3508_follow(&PID_M3508_dipan,90);
+    }
+    else	M3508_follow(&PID_M3508_dipan,180);
+    CAN_M3508_Chassis_SendCurrent();
+
+}
+/*
+SW1 = 1	: 不发射
+SW1 = 2 ：开启拨盘和摩擦轮
+SW1 = 3 ：只开启摩擦轮
+*/
+void RC_Shoot(float fri_speed,float dial_speed)
+{
+    // 根据SW1设置发射机构电机电流
+    switch(rc.sw1)
+    {
+//	if(CAN_M2006.speed<dial_speed/10)rc.sw1=1;
+    case 1:
+        CAN_M3508[4].set_current = 0;
+        CAN_M3508[5].set_current = 0;
+        CAN_M2006.set_current = 0;
+        break;
+    case 3:
+        CAN_M3508[4].set_current =  PID_Calculate(&PID_M3508[4], -fri_speed, CAN_M3508[4].speed);
+        CAN_M3508[5].set_current =  PID_Calculate(&PID_M3508[5], fri_speed, CAN_M3508[5].speed);
+        CAN_M2006.set_current = PID_Calculate(&PID_M2006,4800, CAN_M2006.speed);//0
+
+        break;
+    case 2:
+        CAN_M3508[4].set_current =  PID_Calculate(&PID_M3508[4], -fri_speed, CAN_M3508[4].speed);
+        CAN_M3508[5].set_current =  PID_Calculate(&PID_M3508[5], fri_speed, CAN_M3508[5].speed);
+        CAN_M2006.set_current = PID_Calculate(&PID_M2006, dial_speed, CAN_M2006.speed);
+
+        break;
+    }
+    // 发送电流值给电机
+    CAN_Shoot_SendCurrent();
+}
+
+void RC_Spin(void)
+{
+    spin_angle_set += map(rc.ch0,-660,660,-5,5);
+
+    if(spin_angle_set>180)
+    {
+        spin_angle_set=-180;
+    }
+    if(spin_angle_set<-180)
+    {
+        spin_angle_set=180;
+    }
+
+    CAN_GM6020[0].set_voltage = PID_Calc2(&PID_GM6020[0],spin_angle_set,imu.yaw);
+    CAN_GM6020_Gimbal_SendVoltage();
+//	M3508_follow(&PID_M3508_dipan,60);
+}
+
+
