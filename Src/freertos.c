@@ -209,17 +209,9 @@ void StartDefaultTask(void const * argument)
 				{
 					  if(!Startflag)
 							CAN_GM6020[0].total_angle=CAN_GM6020[0].angle,Startflag=1;
-
-						dialspd=2000;
+            dialspd=2000;
 //						if(GameRobotState.shooter_id1_17mm_cooling_limit - PowerHeat.shooter_id1_17mm_cooling_heat < 10 ||GameRobotState.shooter_id2_17mm_cooling_limit - PowerHeat.shooter_id2_17mm_cooling_heat < 10 )
 //							dialspd = 0;
-						/*
-						RC_Shoot(1000,1000); 		//连发模式
-						RC_Singleshot(7500,6);	//单发模式
-						RC_Vision_aiming();   	//自瞄模式
-						RC_Chassis();		  			//移动模式
-						RC_Spin();			  			//陀螺模式
-						*/
 
 						Level_Up_System();
 				}

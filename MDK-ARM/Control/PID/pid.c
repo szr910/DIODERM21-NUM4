@@ -328,15 +328,12 @@ void M3508_follow_2(PID_TypeDef *pid_6020,float target,float angle,float speed,f
 	  float n=0;
 		PID_Calculate(pid_6020,target,CAN_GM6020[0].total_angle);
 		n=pid_6020->pos_out;
-		angle=(float)(CAN_GM6020[0].angle-target)/8191*2*pi-angle;
+	  speed=-n+speed;
+	  angle=(float)(CAN_GM6020[0].angle-target)/8191*2*pi-angle;
 	  if(!IsFollowFlag) n=0;
 		if(IsSpinFlag==0)//ctrl//if(!rc.key[5])//ctrl
 		{
-			if(spin_flag==1)
-			{
-				spin_flag=0;
-				CAN_GM6020[0].total_angle=CAN_GM6020[0].angle;
-			}
+			
 			CAN_M3508[0].set_current=PID_Calculate(&PID_M3508[0],n+cos(angle+pi/4)*speed,CAN_M3508[0].speed);
 			CAN_M3508[1].set_current=PID_Calculate(&PID_M3508[1],n-sin(angle+pi/4)*speed,CAN_M3508[1].speed);
 			CAN_M3508[2].set_current=PID_Calculate(&PID_M3508[2],n+sin(angle+pi/4)*speed,CAN_M3508[2].speed);
@@ -344,7 +341,7 @@ void M3508_follow_2(PID_TypeDef *pid_6020,float target,float angle,float speed,f
 		}
 		else
 		{
-			spin_flag=1;
+		  CAN_GM6020[0].total_angle=CAN_GM6020[0].angle;
 			CAN_M3508[0].set_current=PID_Calculate(&PID_M3508[0],target2+cos(angle+pi/4)*speed,CAN_M3508[0].speed);
 			CAN_M3508[1].set_current=PID_Calculate(&PID_M3508[1],target2-sin(angle+pi/4)*speed,CAN_M3508[1].speed);
 			CAN_M3508[2].set_current=PID_Calculate(&PID_M3508[2],target2+sin(angle+pi/4)*speed,CAN_M3508[2].speed);

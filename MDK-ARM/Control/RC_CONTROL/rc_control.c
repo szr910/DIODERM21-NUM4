@@ -33,7 +33,7 @@ int CompensateCounter;
 
 
 // Ò£¿ØÆ÷¿ØÖÆµ×ÅÌ
-uint8_t rc_f=0,rc_n=1,shootflag=0,shootflag2=1,spin_flag=0,spin_flag1=0;     //²¦µ¯ÅÐ¶Ï±êÖ¾
+uint8_t rc_f=0,rc_n=1,shootflag=0,shootflag2=1,spin_flag1=0;     //²¦µ¯ÅÐ¶Ï±êÖ¾
 
 shoot_control_t shoot_control;          //Éä»÷Êý¾Ý
 uint8_t Storeflag=0;
@@ -53,7 +53,7 @@ double imu_angle_bias;
 double imu_agbias_sum;
 float incpl = 0,incpl_last = 0;
 
-uint16_t FollowInitAngle=7600; //4216
+uint16_t FollowInitAngle=7671; //4216
 uint8_t QuickReveseFlag=0;
 uint16_t QuickReveseTarget=180;
 uint16_t QuickReveseCounter=0;
@@ -189,9 +189,9 @@ void RC_PC(float classis_speed,float spin_speed,float dial_speed,float shoot_spe
 	if(rc.sw2==2)IsSpinFlag=1;
 	else IsSpinFlag=0;
 	/*************************µ×ÅÌÔË¶¯*******************************/
-	
 	float x=map(rc.ch3,-660,660,-3,3);
-	float y=map(rc.ch2,-660,660,-3,3);
+	float y=map(rc.ch2,-660,660,3,-3);
+	if(fabs(x)<0.5)
 	tempx = x;
 	tempy = y;
 	float pix=0;
@@ -202,10 +202,8 @@ void RC_PC(float classis_speed,float spin_speed,float dial_speed,float shoot_spe
 	else if(x<0&&y>0)pix=pi*5/4;
 	else if(x==0&&y>0)pix=pi*3/2;
 	else if(x>0&&y>0)pix=pi*7/4;
-  M3508_follow_2(&PID_M3508_Follow,FollowInitAngle,map(rc.ch0,-660,660,-2,2)-pix,sqrt(x*x+y*y)*classis_speed,spin_speed*2);
+  M3508_follow_2(&PID_M3508_Follow,FollowInitAngle,pix,sqrt(x*x+y*y)*classis_speed,spin_speed*2);
 
- 
-	/*************************°´R¼üÇÐ»»µ¯²Õ*******************************/
 # if RACEFLAG
 		CAN_M3508[4].set_current =  PID_Calculate(&PID_M3508[4], shoot_speed, CAN_M3508[4].speed);
     CAN_M3508[5].set_current =  PID_Calculate(&PID_M3508[5], -shoot_speed, CAN_M3508[5].speed);
@@ -502,97 +500,46 @@ void RC_Spin(void)
 
 void Level_Up_System(void)
 {
-	
-	if(GameRobotState.robot_level==1)
-	{						CAN_Superpower((uint16_t)(43)*100);
-						dialspd = 1500;
-						Compensatefrispd = frispd + CompensateCounter*50;
-						if(Compensatefrispd>=frispdmax) Compensatefrispd = frispdmax;
-							
-						if(powerData[1]>18){
-								if(IsSpeedUpFlag)
-										RC_PC(3500,3500,dialspd,Compensatefrispd);
-
-								else{
-									if(powerData[1]>=20.5f)
-											RC_PC(2500,2500,dialspd,Compensatefrispd);
-									else
-											RC_PC(2000,2000,dialspd,Compensatefrispd);
-								}
-						}
-						else if(powerData[1]<=18 && powerData[1]>=16){
-								IsSpeedUpFlag = 0;
-								RC_PC(1500,500,dialspd,Compensatefrispd);
-						}
-						else RC_PC(700,500,dialspd,Compensatefrispd);
-	}
-	else if(GameRobotState.robot_level==2)
-	{
-			CAN_Superpower((uint16_t)(47)*100);
-		dialspd = 2000;
-		Compensatefrispd = frispd + CompensateCounter*50;
-		if(Compensatefrispd>=frispdmax) Compensatefrispd = frispdmax;
-						if(powerData[1]>18){
-								if(IsSpeedUpFlag)
-										RC_PC(3500,3500,dialspd,Compensatefrispd);
-
-								else{
-									if(powerData[1]>=20.5f)
-											RC_PC(2500,2500,dialspd,Compensatefrispd);
-									else
-											RC_PC(2000,2000,dialspd,Compensatefrispd);
-								}
-						}
-						else if(powerData[1]<=18 && powerData[1]>=16){
-								IsSpeedUpFlag = 0;
-								RC_PC(1500,500,dialspd,Compensatefrispd);
-						}
-						else RC_PC(700,500,dialspd,Compensatefrispd);
-	}
-	else	if(GameRobotState.robot_level==3)
-	{
+	switch(GameRobotState.robot_level){
+		case 1:
 			CAN_Superpower((uint16_t)(80)*100);
-		dialspd = 2300;
-		Compensatefrispd = frispd + CompensateCounter*50;
-		if(Compensatefrispd>=frispdmax) Compensatefrispd = frispdmax;
+			dialspd = 2300;
+			Compensatefrispd = frispd + CompensateCounter*50;
+			if(Compensatefrispd>=frispdmax) Compensatefrispd = frispdmax;
 			if(powerData[1]>18){
 					if(IsSpeedUpFlag)
 							RC_PC(3500,3500,dialspd,Compensatefrispd);
-
-					else{
-						if(powerData[1]>=20.5f)
-								RC_PC(2500,2500,dialspd,Compensatefrispd);
-						else
-								RC_PC(2000,2000,dialspd,Compensatefrispd);
-					}
+          else if(powerData[1]>=20.5f)RC_PC(2500,2500,dialspd,Compensatefrispd);
+					else RC_PC(2000,2000,dialspd,Compensatefrispd);
 			}
-			else if(powerData[1]<=18 && powerData[1]>=16){
-					IsSpeedUpFlag = 0;
-					RC_PC(1500,500,dialspd,Compensatefrispd);
-			}
+			else if(powerData[1]<=18 && powerData[1]>=16)
+				IsSpeedUpFlag = 0,RC_PC(1500,500,dialspd,Compensatefrispd);
 			else RC_PC(700,500,dialspd,Compensatefrispd);
-	}
-	else
-	{	
-				CAN_Superpower((uint16_t)(43)*100);
-						dialspd = 1800;
-						Compensatefrispd = frispd + CompensateCounter*50;
-		if(Compensatefrispd>=frispdmax) Compensatefrispd = frispdmax;
-						if(powerData[1]>18){
-								if(IsSpeedUpFlag)
-										RC_PC(3500,3500,dialspd,Compensatefrispd);
-
-								else{
-									if(powerData[1]>=18.0f)
-											RC_PC(2500,2500,dialspd,Compensatefrispd);
-									else
-											RC_PC(2000,2000,dialspd,Compensatefrispd);
-								}
-						}
-						else if(powerData[1]<=18 && powerData[1]>=16){
-								IsSpeedUpFlag = 0;
-								RC_PC(1500,500,dialspd,Compensatefrispd);
-						}
-						else RC_PC(700,500,dialspd,Compensatefrispd);
+		  break;
+		case 2:
+		  break;
+		case 3:
+		  break;
+		default:
+			CAN_Superpower((uint16_t)(80)*100);
+			dialspd = 2300;
+			Compensatefrispd = frispd + CompensateCounter*50;
+		
+# if Super-Capacitor
+			if(Compensatefrispd>=frispdmax) Compensatefrispd = frispdmax;
+			if(powerData[1]>18){
+				if(IsSpeedUpFlag)
+					RC_PC(3500,3500,dialspd,Compensatefrispd);
+        else if(powerData[1]>=20.5f)RC_PC(2500,2500,dialspd,Compensatefrispd);
+				else RC_PC(2000,2000,dialspd,Compensatefrispd);
+			}
+			else if(powerData[1]<=18 && powerData[1]>=16)
+				IsSpeedUpFlag = 0,RC_PC(1500,500,dialspd,Compensatefrispd);
+			else RC_PC(700,500,dialspd,Compensatefrispd);
+			}
+#else
+			RC_PC(2500,2500,dialspd,Compensatefrispd);
+#endif
 	}
 }
+	

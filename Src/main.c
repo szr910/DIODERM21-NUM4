@@ -197,7 +197,7 @@ void BSP_All_Init(void)	// 初始化所有硬件层
     CAN_FilterInit(&hcan2);	// 初始化CAN2的筛选器
 
     PID_Init(&PID_GM6020[0],POSITION_PID,4000,2000,5.5,0.01,0.03);	// 1000,0,1000
-	  PID_Init(&PID_GM6020_speed[0],POSITION_PID,30000,10000,70,0,0);//0.0001
+	  PID_Init(&PID_GM6020_speed[0],POSITION_PID,30000,10000,80,0,0);//0.0001
 	
 	  PID_Init(&PID_GM6020[1],POSITION_PID,2000,15000,3,0,0);		// 云台侧面电机1600
     PID_Init(&PID_GM6020_speed[1],POSITION_PID,30000,3000,20,0,0);//0.0001
@@ -212,7 +212,7 @@ void BSP_All_Init(void)	// 初始化所有硬件层
 		
     for(i=0; i<4; i++)	// 四个底盘电机
     {
-        PID_Init(&PID_M3508[i],DELTA_PID,20000,2000,2,0,0);//5.5 0.05 1.0
+        PID_Init(&PID_M3508[i],DELTA_PID,20000,2000,5,0,0);//5.5 0.05 1.0
     }
 
     for(i=4; i<8; i++)	// 四个摩擦轮电机
@@ -220,7 +220,7 @@ void BSP_All_Init(void)	// 初始化所有硬件层
 				PID_Init(&PID_M3508[i],POSITION_PID,16000,3000,9,0.05,5);
     }
 		
-    PID_Init(&PID_M3508_Follow,POSITION_PID,2500,10000,2.5,0,0.5);//6000 4 0 0.5 较为理想   10 0 0.1
+    PID_Init(&PID_M3508_Follow,POSITION_PID,6000,6000,8,0,0.5);//6000 4 0 0.5 较为理想   10 0 0.1
 		
 		PID_Init(&PID_HEAT_PWM,POSITION_PID,1000,1000,50,0.005,20);
 		PID_Init(&PID_Superpower,POSITION_PID,1000,1000,0.050,0.005,0.1);

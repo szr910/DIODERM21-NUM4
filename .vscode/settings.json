@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "rc_control.h": "c",
+        "shoot.h": "c"
+    }
+}
